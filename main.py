@@ -1,4 +1,5 @@
 import os
+import random 
 
 from PyQt5.QtWidgets import*
 from PyQt5.uic import loadUi
@@ -9,9 +10,13 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
 
-        self.color = [QColor.fromRgb(255,0,0,100), QColor.fromRgb(255,255,0,100), QColor.fromRgb(0,0,255,100), QColor.fromRgb(0,0,0,150),QColor.fromRgb(0,255,0,150)]
+        self.color = [QColor.fromRgb(255,0,0,100), QColor.fromRgb(255,255,0,100), QColor.fromRgb(0,0,255,100), 
+                        QColor.fromRgb(0,0,0,150),QColor.fromRgb(0,255,0,150),QColor.fromRgb(127,255,212,100),
+                        QColor.fromRgb(68,148,74,100),QColor.fromRgb(249,132,229,100),QColor.fromRgb(189,51,164,100)]
         self.mask = [[],[]]
         self.chosen_points = []
+        self.class_list = []
+
 
         QMainWindow.__init__(self)
 
@@ -19,7 +24,8 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("proga")
 
-
+        self.create_file()
+        self.add_classes()
 
         self.pushButton_open.clicked.connect(self.addImages)
 
@@ -110,7 +116,7 @@ class MainWindow(QMainWindow):
         color_index = self.listClass.currentRow()
 
         pen = QBrush(self.color[color_index])
-        pen2 = QBrush(Qt.white)
+        pen2 = QBrush(self.color[color_index])
         painter2.setBrush(pen2)
 
         painter.setBrush(pen)
@@ -132,22 +138,39 @@ class MainWindow(QMainWindow):
 
         self.pix2.save(filePath)
 
-        '''filePath = filePath[:-4]+'.txt'
+        filePath = filePath[:-4]+'.txt'
         f = open(filePath, 'w')
         for i in range(len(self.mask[0])):
             f.write(str(self.mask[0][i])+' ')
             for j in range(len(self.mask[1][i])):
                 f.write(str(self.mask[1][i][j].x()) + ' ' + str(self.mask[1][i][j].y()) + ' ')
             f.write('\n')
-        f.close()'''
+        f.close()
 
         self.mask = [[],[]]
 
     # Добавление классов в Qlist
     def addClass(self):
+        f = open('Classes.txt', 'a')
+        clas = str(len(self.class_list)+1) + ' ' + self.lineEdit_class.text()+ ' ' + '\n'
+        f.write(clas)
+        f.close()
+        self.class_list.append(clas)
         self.listClass.addItem(self.lineEdit_class.text())
 
-
+    # Создание файла с классами
+    def create_file(self):
+        f = open('Classes.txt', 'a')
+        f.close()
+    
+    # Добавление существующих классов в список
+    def add_classes(self):
+        f = open('Classes.txt', 'r')
+        for line in f:
+            clas = line.split(' ')
+            self.listClass.addItem(clas[1])
+            self.class_list.append(clas)
+        f.close()
 
 
 

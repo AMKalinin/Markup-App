@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>620</width>
-    <height>898</height>
+    <width>964</width>
+    <height>883</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -124,12 +124,9 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_class"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_addClass">
+           <widget class="QPushButton" name="pushButton_class">
             <property name="text">
-             <string>Добавить класс</string>
+             <string>Классы</string>
             </property>
            </widget>
           </item>
@@ -142,6 +139,16 @@
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="action">
+   <property name="text">
+    <string>Добавить</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>ыва</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

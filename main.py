@@ -1,39 +1,36 @@
 import os
-import random 
 
 from PyQt5.QtWidgets import*
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import *
 from PyQt5.QtCore import Qt
 
+import pandas as pd
+
+import second_form
+
+
 class MainWindow(QMainWindow):
 
     def __init__(self):
 
         self.color = [QColor.fromRgb(255,0,0,100), QColor.fromRgb(255,255,0,100), QColor.fromRgb(0,0,255,100), 
-                        QColor.fromRgb(0,0,0,150),QColor.fromRgb(0,255,0,150),QColor.fromRgb(127,255,212,100),
+                        QColor.fromRgb(0,130,50,150),QColor.fromRgb(0,255,0,150),QColor.fromRgb(127,255,212,100),
                         QColor.fromRgb(68,148,74,100),QColor.fromRgb(249,132,229,100),QColor.fromRgb(189,51,164,100)]
         self.mask = [[],[]]
         self.chosen_points = []
-        self.class_list = []
-
+        self.class_list = [[]] 
 
         QMainWindow.__init__(self)
+        loadUi('main.ui', self)
+        self.setWindowTitle('Markup')
 
-        loadUi("forma.ui", self)
-
-        self.setWindowTitle("proga")
-
-        self.create_file()
-        self.add_classes()
 
         self.pushButton_open.clicked.connect(self.addImages)
-
         self.pushButton_save_mask.clicked.connect(self.save_mask)
         self.pushButton_save.clicked.connect(self.save)
-        self.pushButton_addClass.clicked.connect(self.addClass)
-
         self.listImage.itemClicked.connect(self.selectionChenged)
+        self.pushButton_class.clicked.connect(self.add_class)
 
     # добавление списка файлов в Qlist
     def addImages(self):
@@ -71,18 +68,20 @@ class MainWindow(QMainWindow):
 
         self.chosen_points = []
 
-    # Получение координат клика
+    # Получение координат клика 
     def mouseReleaseEvent(self, cursor_event):
-        self.chosen_points.append(cursor_event.pos())
+        xy = cursor_event.pos()
+        if (xy.x()<self.pix2.width()) and (xy.y()< self.pix2.height()):
+            self.chosen_points.append(cursor_event.pos())
         self.update()
 
     # Отрисовка линий по нажатым точкам на нашем изображении
     def paintEvent(self, paint_event):
+
         if len(self.chosen_points)>1:
             #self.label.clear()
 
             painter = QPainter()
-
 
             painter.begin(self.pix)
 
@@ -95,14 +94,19 @@ class MainWindow(QMainWindow):
             painter.setPen(pen)
 
             painter.setRenderHint(QPainter.Antialiasing, True)
-            for i in range(len(self.chosen_points)-1):
-                painter.drawLine(self.chosen_points[i],self.chosen_points[i+1])
+            
+            painter.drawLine(self.chosen_points[-2],self.chosen_points[-1])
+
             painter.end()
             self.label.setPixmap(self.pix)
 
+    def getCode(self, name):
+        return self.sec_win.class_list.loc[self.sec_win.class_list['type'] == name].values[0][-1]
+
+
     # Сохранение класса и координат маски
     def save_mask(self):
-        self.mask[0].append(self.listClass.currentRow())
+        self.mask[0].append(self.getCode(self.listClass.currentItem().data(0)))
         self.mask[1].append(self.chosen_points)
 
         painter = QPainter()
@@ -149,34 +153,12 @@ class MainWindow(QMainWindow):
 
         self.mask = [[],[]]
 
-    # Добавление классов в Qlist
-    def addClass(self):
-        f = open('Classes.txt', 'a')
-        clas = str(len(self.class_list)+1) + ' ' + self.lineEdit_class.text()+ ' ' + '\n'
-        f.write(clas)
-        f.close()
-        self.class_list.append(clas)
-        self.listClass.addItem(self.lineEdit_class.text())
-
-    # Создание файла с классами
-    def create_file(self):
-        f = open('Classes.txt', 'a')
-        f.close()
-    
-    # Добавление существующих классов в список
-    def add_classes(self):
-        f = open('Classes.txt', 'r')
-        for line in f:
-            clas = line.split(' ')
-            self.listClass.addItem(clas[1])
-            self.class_list.append(clas)
-        f.close()
-
-
-
-
-
-
+    # Вызов формы с существующими классами
+    def add_class(self):
+        self.sec_win = second_form.SecondWindow(self)
+        self.listClass.clear()
+        self.sec_win.table = self.listClass
+        self.sec_win.show()
 
 
 app = QApplication([])

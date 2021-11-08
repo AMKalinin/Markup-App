@@ -5,7 +5,6 @@ from PyQt5.uic import loadUi
 from PyQt5.QtGui import *
 from PyQt5.QtCore import Qt
 
-import pandas as pd
 
 import second_form
 
@@ -71,8 +70,11 @@ class MainWindow(QMainWindow):
     # Получение координат клика 
     def mouseReleaseEvent(self, cursor_event):
         xy = cursor_event.pos()
-        if (xy.x()<self.pix2.width()) and (xy.y()< self.pix2.height()):
-            self.chosen_points.append(cursor_event.pos())
+        if (xy.x()>self.toolBar.width()) and (xy.y()> self.statusbar.height()):
+            if (xy.x()<self.pix2.width()) and (xy.y()< self.pix2.height()):
+                xy.setX(xy.x()-self.toolBar.width())
+                xy.setY(xy.y() - self.statusbar.height())
+                self.chosen_points.append(xy)
         self.update()
 
     # Отрисовка линий по нажатым точкам на нашем изображении
@@ -101,7 +103,11 @@ class MainWindow(QMainWindow):
             self.label.setPixmap(self.pix)
 
     def getCode(self, name):
-        return self.sec_win.class_list.loc[self.sec_win.class_list['type'] == name].values[0][-1]
+        try:
+            a = self.sec_win.class_list.loc[self.sec_win.class_list['type'] == name].values[0][-1]
+        except:
+            a = self.sec_win.class_list.loc[self.sec_win.class_list['type2'] == name].values[0][-1]
+        return a
 
 
     # Сохранение класса и координат маски

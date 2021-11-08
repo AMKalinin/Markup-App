@@ -32,8 +32,9 @@ class SecondWindow(QWidget):
         ind_row = 'NaN'
         ind_konec = 0
 
-        for i, row in self.class_list.iterrows():
-            
+        ind_row1 = 'NaN'
+
+        for i, row in self.class_list.iterrows():    
         # Добавление строки
             self.tableWidget.setRowCount(self.tableWidget.rowCount() + 1)
             ind_konec = i
@@ -47,7 +48,17 @@ class SecondWindow(QWidget):
                 ind_row = i
 
 
+            if ind_row1 == 'NaN':
+                name1 = str(row[1])
+                ind_row1 = i
+            
+            if (name1 != str(row[1])) or (i==self.tableWidget.rowCount()) :
+                name1 = str(row[1])
+                self.tableWidget.setSpan(ind_row1,1,i-ind_row1,1)
+                ind_row1 = i
+
             for j in range(self.tableWidget.columnCount()):
                 self.tableWidget.setItem(i, j, QTableWidgetItem(str(row[j])))
         
         self.tableWidget.setSpan(ind_row,0,ind_konec-ind_row+1,1)
+        self.tableWidget.setSpan(ind_row1,1,ind_konec-ind_row1+1,1)

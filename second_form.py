@@ -11,6 +11,7 @@ class SecondWindow(QWidget):
         loadUi('second_form.ui', self)
         self.class_list =  pd.read_csv('Classes.csv')
         self.add()
+        self.cods = {}
 
         self.pushButton_cancel.clicked.connect(self.cancel)
         self.pushButton_add.clicked.connect(self.add_in_list)
@@ -22,7 +23,7 @@ class SecondWindow(QWidget):
     def add_in_list(self):
         a = self.tableWidget.selectedIndexes()
         for i in range(len(a)):
-            self.table.addItem(a[i].data())
+            self.table.addItem(a[i].data())        
         self.close()
         
     def add(self):

@@ -5,6 +5,14 @@ from PyQt5.uic import loadUi
 from PyQt5.QtGui import *
 from PyQt5.QtCore import Qt
 
+import numpy as np
+
+import json
+
+import h5py
+
+import cv2 
+
 
 import second_form
 
@@ -24,6 +32,9 @@ class MainWindow(QMainWindow):
         loadUi('main.ui', self)
         self.setWindowTitle('Markup')
 
+        
+        self.action_3.triggered.connect(self.create_hdf)
+
 
         self.pushButton_open.clicked.connect(self.addImages)
         self.pushButton_save_mask.clicked.connect(self.save_mask)
@@ -31,10 +42,68 @@ class MainWindow(QMainWindow):
         self.listImage.itemClicked.connect(self.selectionChenged)
         self.pushButton_class.clicked.connect(self.add_class)
 
+    def create_hdf(self):
+        hf=h5py.File('data.hdf5', 'w')
+        features = hf.create_group('features')
+        hf.create_group('target')
+
+        list_images = self.getFileNames()[0]
+
+        for i in range(len(list_images)):
+            features.create_dataset('img'+str(i), data=cv2.imread(list_images[i]))
+        self.flag = False
+        
+        stroka = ''
+        for i in range(len(self.listClass)):
+            stroka += str(self.getCode(self.listClass.item(i).data(0))) + ', '
+
+        metadata = {'Date': '06.12',
+                    'User': 'Me',
+                    'List classes': stroka}
+
+        hf.create_dataset('Project info', data=json.dumps(metadata))
+
+        hf.close()
+        self.addImages()
+
+
+    def add_target(self, code, points, w, h):
+        hf = h5py.File('data.hdf5', 'a')
+        group = hf.get('target')
+
+        metadata = {    'id target': 17,
+                        'Signature 1': None,
+                        'Signature 2': None,
+                        'Status': None,
+                        'Time of last change': '18.11.2021 16:57',
+                        'Size x': w,
+                        'Size y': h,
+                        'Number of objects': 1 ,
+                        'Objects': [
+                        {
+                            'Id': 1,
+                            'Type': 'Polygon',
+                            'FIO': 'AMK',
+                            'Time': 'time',
+                            'Class': code,
+                            'Param': points }]}  
+        group.create_dataset('img0',data=json.dumps(metadata))
+        hf.close()
+        
+
     # добавление списка файлов в Qlist
     def addImages(self):
-        list_images = self.getFileNames()[0]
-        self.listImage.addItems(list_images)
+        hf=h5py.File('data.hdf5', 'r')
+        list = []
+        set =  hf.get('features').items()
+        
+        for key, val in set:
+            list.append(key)
+
+        #list_images = self.getFileNames()[0]
+        self.listImage.addItems(list)
+        hf.close()
+        
 
     # Получение списка файлов
     def getFileNames(self):
@@ -50,8 +119,16 @@ class MainWindow(QMainWindow):
 
     # для отображения файла выбранного из списка
     def selectionChenged(self, item):
-        self.pix = QPixmap(item.text())#.scaled(600, 600)
-        self.pix2 = QPixmap(item.text())
+        
+        hf=h5py.File('data.hdf5', 'r')
+        data =   np.array(hf.get('features/'+ item.text()))
+        img = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+        hf.close()
+        height, width, channel = img.shape
+        bytesPerLine = 3 * width
+
+        self.pix = QPixmap.fromImage(QImage(img.data,width, height,bytesPerLine, QImage.Format_RGB888))#.scaled(600, 600)
+        self.pix2 = QPixmap.fromImage(QImage(img.data,width, height,bytesPerLine, QImage.Format_RGB888))
 
         painter = QPainter()
         painter.begin(self.pix2)
@@ -147,15 +224,20 @@ class MainWindow(QMainWindow):
             return
 
         self.pix2.save(filePath)
-
+        
+        points = []
         filePath = filePath[:-4]+'.txt'
         f = open(filePath, 'w')
         for i in range(len(self.mask[0])):
             f.write(str(self.mask[0][i])+' ')
             for j in range(len(self.mask[1][i])):
+                points.append(self.mask[1][i][j].x())
+                points.append(self.mask[1][i][j].y())
                 f.write(str(self.mask[1][i][j].x()) + ' ' + str(self.mask[1][i][j].y()) + ' ')
             f.write('\n')
-        f.close()
+        f.close()    
+
+        self.add_target(self.mask[0][0], points,self.pix2.width(),self.pix2.height())
 
         self.mask = [[],[]]
 

@@ -178,6 +178,8 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="action_3"/>
+    <addaction name="action_4"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -214,6 +216,16 @@
   <action name="action_2">
    <property name="text">
     <string>Карандаш</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>Создать</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>Открыть</string>
    </property>
   </action>
  </widget>
